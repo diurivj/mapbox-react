@@ -1,28 +1,49 @@
-import React, { Component } from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from 'react'
+import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder'
+import mapboxgl from 'mapbox-gl' //npm i mapbox-gl o yarn add mapbox-gl
+import './App.css'
+
+mapboxgl.accessToken =
+  'pk.eyJ1IjoiZGl1cml2aiIsImEiOiJjanAxdjA2cTQwMGp1M2tvYzZmZGp3bWc3In0.4cZEyLkU2ikqx_wb4A1z8A'
 
 class App extends Component {
+  state = {
+    lng: 5,
+    lat: 34,
+    zoom: 1.5
+  }
+
+  componentDidMount() {
+    const { lng, lat, zoom } = this.state
+    const geocoder = new MapboxGeocoder({
+      accessToken: mapboxgl.accessToken
+    })
+    const map = new mapboxgl.Map({
+      container: this.mapContainer,
+      style: 'mapbox://styles/mapbox/streets-v9',
+      center: [lng, lat],
+      zoom
+    })
+
+    map.on('move', () => {
+      const { lng, lat } = map.getCenter()
+
+      this.setState({
+        lng: lng.toFixed(4),
+        lat: lat.toFixed(4),
+        zoom: map.getZoom().toFixed(2)
+      })
+    })
+    
+    map.addControl(geocoder)
+    geocoder.on('result', (e) => console.log(e))
+  }
+
   render() {
     return (
-      <div className="App">
-        <header className="App-header">
-          <img src={logo} className="App-logo" alt="logo" />
-          <p>
-            Edit <code>src/App.js</code> and save to reload.
-          </p>
-          <a
-            className="App-link"
-            href="https://reactjs.org"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Learn React
-          </a>
-        </header>
-      </div>
-    );
+      <div style={{ width: '400px', height: '300px' }} ref={e => (this.mapContainer = e)}/>
+    )
   }
 }
 
-export default App;
+export default App
